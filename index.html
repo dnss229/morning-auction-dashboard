@@ -599,10 +599,10 @@
         <div class="subline">2026-05-25 09:25 更新 · 观察口径：竞价涨跌幅、匹配额、封单强度、开盘承接</div>
       </div>
       <div class="actions">
-        <div class="segmented" aria-label="市场视角">
-          <button class="active" data-view="all">全市场</button>
-          <button data-view="hot">强势</button>
-          <button data-view="risk">风险</button>
+        <div class="segmented" aria-label="个股筛选">
+          <button class="active" data-view="all">全部</button>
+          <button data-view="hot">强势股</button>
+          <button data-view="risk">风险股</button>
         </div>
         <button class="icon-button" id="refresh" title="刷新示例数据" aria-label="刷新">↻</button>
       </div>
@@ -893,9 +893,9 @@
       return " amber";
     }
 
-    function renderView(view) {
+    function renderView(view, stockView = view) {
       const data = dataSets[view];
-      currentView = view;
+      currentView = stockView;
       heat.textContent = data.heat;
       thermo.style.background = `conic-gradient(${data.heat >= 55 ? "var(--red)" : "var(--green)"} 0 ${data.heat}%, #e7ebf1 ${data.heat}% 100%)`;
       heat.style.color = data.heat >= 55 ? "var(--red)" : "var(--green)";
@@ -983,7 +983,7 @@
       button.addEventListener("click", () => {
         document.querySelectorAll(".segmented button").forEach(item => item.classList.remove("active"));
         button.classList.add("active");
-        renderView(button.dataset.view);
+        renderView("all", button.dataset.view);
       });
     });
 
