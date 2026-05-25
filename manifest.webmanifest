@@ -1,0 +1,25 @@
+{
+  "name": "早盘集合竞价表现",
+  "short_name": "早盘竞价",
+  "description": "每天 09:30 查看集合竞价、开盘承接和早盘交易计划。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f7f9",
+  "theme_color": "#111827",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='42' fill='%23111827'/%3E%3Cpath d='M42 124h108' stroke='%23fff' stroke-width='10' stroke-linecap='round'/%3E%3Cpath d='M54 112l27-31 22 20 35-43' fill='none' stroke='%23ef4444' stroke-width='12' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='54' cy='112' r='8' fill='%23ef4444'/%3E%3Ccircle cx='81' cy='81' r='8' fill='%23ef4444'/%3E%3Ccircle cx='103' cy='101' r='8' fill='%23ef4444'/%3E%3Ccircle cx='138' cy='58' r='8' fill='%23ef4444'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%23111827'/%3E%3Cpath d='M112 332h288' stroke='%23fff' stroke-width='28' stroke-linecap='round'/%3E%3Cpath d='M144 300l72-82 58 53 94-116' fill='none' stroke='%23ef4444' stroke-width='34' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='144' cy='300' r='22' fill='%23ef4444'/%3E%3Ccircle cx='216' cy='218' r='22' fill='%23ef4444'/%3E%3Ccircle cx='274' cy='271' r='22' fill='%23ef4444'/%3E%3Ccircle cx='368' cy='155' r='22' fill='%23ef4444'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

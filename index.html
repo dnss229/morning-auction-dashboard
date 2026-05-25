@@ -1,0 +1,1007 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="早盘竞价">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>早盘集合竞价表现</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --line: #d8dee8;
+      --soft: #eef2f7;
+      --red: #d73333;
+      --red-soft: #fff0f0;
+      --green: #0f8c58;
+      --green-soft: #eaf8f1;
+      --amber: #aa6a00;
+      --amber-soft: #fff7df;
+      --blue: #2157d6;
+      --blue-soft: #edf3ff;
+      --shadow: 0 14px 34px rgba(24, 35, 58, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    .app {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 22px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 0 20px;
+    }
+
+    .title-block {
+      display: grid;
+      gap: 6px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(24px, 3vw, 38px);
+      line-height: 1.12;
+      font-weight: 800;
+    }
+
+    .subline {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .segmented {
+      display: inline-grid;
+      grid-template-columns: repeat(3, minmax(64px, 1fr));
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      gap: 4px;
+      min-width: 230px;
+    }
+
+    .segmented button,
+    .icon-button {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      border-radius: 6px;
+      min-height: 34px;
+      cursor: pointer;
+    }
+
+    .segmented button.active {
+      background: var(--text);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .icon-button {
+      width: 38px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.35fr 0.85fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel-title {
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .panel-note {
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .market-summary {
+      display: grid;
+      grid-template-columns: minmax(280px, 0.95fr) repeat(4, minmax(118px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .summary-main,
+    .metric {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      min-height: 132px;
+    }
+
+    .summary-main {
+      padding: 18px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .thermo {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: conic-gradient(var(--red) 0 71%, #e7ebf1 71% 100%);
+      position: relative;
+      flex: 0 0 auto;
+    }
+
+    .thermo::after {
+      content: "";
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      position: absolute;
+      background: var(--panel);
+    }
+
+    .thermo span {
+      position: relative;
+      z-index: 1;
+      font-weight: 900;
+      font-size: 24px;
+      color: var(--red);
+    }
+
+    .summary-copy {
+      min-width: 0;
+    }
+
+    .summary-copy strong {
+      display: block;
+      font-size: 20px;
+      line-height: 1.25;
+      margin-bottom: 8px;
+    }
+
+    .summary-copy p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    .metric {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      align-content: center;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .metric-value {
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 850;
+    }
+
+    .metric-foot {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .red {
+      color: var(--red);
+    }
+
+    .green {
+      color: var(--green);
+    }
+
+    .amber {
+      color: var(--amber);
+    }
+
+    .content-pad {
+      padding: 14px;
+    }
+
+    .indices {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .index-tile {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+      padding: 12px;
+      min-height: 118px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .index-name {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .index-price {
+      font-size: 22px;
+      font-weight: 850;
+    }
+
+    .range-bar {
+      height: 8px;
+      background: #e0e6ee;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .range-bar span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--red);
+    }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      background: #fafbfc;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .stock-name {
+      font-weight: 800;
+    }
+
+    .code {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 24px;
+      padding: 0 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      background: var(--blue-soft);
+      color: var(--blue);
+      white-space: nowrap;
+    }
+
+    .tag.hot {
+      background: var(--red-soft);
+      color: var(--red);
+    }
+
+    .tag.cool {
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .sector-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .sector-row {
+      display: grid;
+      grid-template-columns: 92px 1fr 54px;
+      align-items: center;
+      gap: 10px;
+      min-height: 38px;
+    }
+
+    .sector-row b {
+      font-size: 13px;
+    }
+
+    .sector-track {
+      height: 10px;
+      border-radius: 999px;
+      background: #e3e8ef;
+      overflow: hidden;
+    }
+
+    .sector-track span {
+      display: block;
+      height: 100%;
+      background: var(--red);
+      border-radius: inherit;
+    }
+
+    .sector-row.weak .sector-track span {
+      background: var(--green);
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    .signal-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .signal {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 10px;
+      align-items: start;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-top: 5px;
+      background: var(--red);
+    }
+
+    .dot.green {
+      background: var(--green);
+    }
+
+    .dot.amber {
+      background: var(--amber);
+    }
+
+    .signal strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .signal span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .timeline {
+      display: grid;
+      gap: 12px;
+    }
+
+    .time-step {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 12px;
+    }
+
+    .time-step time {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .time-step div {
+      padding-bottom: 12px;
+      border-bottom: 1px dashed var(--line);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .time-step:last-child div {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .search {
+      min-width: 220px;
+      height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 12px;
+      background: #fff;
+    }
+
+    select {
+      height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 0 10px;
+      color: var(--text);
+    }
+
+    .footnote {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      background: #fff;
+    }
+
+    @media (max-width: 1180px) {
+      .grid,
+      .two-col {
+        grid-template-columns: 1fr;
+      }
+
+      .market-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .summary-main {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .app {
+        padding: 14px;
+      }
+
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .actions {
+        justify-content: stretch;
+      }
+
+      .segmented {
+        min-width: 100%;
+      }
+
+      .market-summary,
+      .indices {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-main {
+        grid-template-columns: 1fr;
+      }
+
+      .thermo {
+        width: 84px;
+        height: 84px;
+      }
+
+      .thermo::after {
+        width: 62px;
+        height: 62px;
+      }
+
+      .panel-head,
+      .controls {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .panel-note,
+      .search,
+      select {
+        width: 100%;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="title-block">
+        <h1>早盘集合竞价表现</h1>
+        <div class="subline">2026-05-25 09:25 更新 · 观察口径：竞价涨跌幅、匹配额、封单强度、开盘承接</div>
+      </div>
+      <div class="actions">
+        <div class="segmented" aria-label="市场视角">
+          <button class="active" data-view="all">全市场</button>
+          <button data-view="hot">强势</button>
+          <button data-view="risk">风险</button>
+        </div>
+        <button class="icon-button" id="refresh" title="刷新示例数据" aria-label="刷新">↻</button>
+      </div>
+    </header>
+
+    <section class="market-summary" aria-label="集合竞价概览">
+      <div class="summary-main">
+        <div class="thermo" aria-label="竞价温度 71 分"><span id="heat">71</span></div>
+        <div class="summary-copy">
+          <strong id="headline">竞价偏强，题材延续性好于指数</strong>
+          <p id="summaryText">高开家数占优，AI 算力、机器人、低空经济资金最集中；需观察 09:30 后前排承接，若放量回落则强度打折。</p>
+        </div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">高开 / 低开</div>
+        <div class="metric-value red" id="openBreadth">3124 / 1648</div>
+        <div class="metric-foot">高开占比 65.5%</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">竞价匹配额</div>
+        <div class="metric-value" id="matchedAmount">418 亿</div>
+        <div class="metric-foot">较昨日 +18.6%</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">涨停竞价</div>
+        <div class="metric-value red" id="limitUp">36</div>
+        <div class="metric-foot">一字板 11 只</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">跌停竞价</div>
+        <div class="metric-value green" id="limitDown">7</div>
+        <div class="metric-foot">退潮风险可控</div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div>
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title">指数竞价</div>
+            <div class="panel-note">开盘方向与量能确认</div>
+          </div>
+          <div class="content-pad">
+            <div class="indices" id="indices"></div>
+          </div>
+        </section>
+
+        <section class="two-col">
+          <div class="panel">
+            <div class="panel-head">
+              <div class="panel-title">强势方向</div>
+              <div class="panel-note">按竞价强度排序</div>
+            </div>
+            <div class="content-pad">
+              <div class="sector-list" id="sectorList"></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <div class="panel-title">竞价信号</div>
+              <div class="panel-note">盘前决策提示</div>
+            </div>
+            <div class="content-pad">
+              <div class="signal-list" id="signals"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" style="margin-top: 16px;">
+          <div class="panel-head">
+            <div class="panel-title">个股表现</div>
+            <div class="controls">
+              <input class="search" id="search" type="search" placeholder="搜索股票 / 代码 / 题材">
+              <select id="typeFilter" aria-label="筛选类型">
+                <option value="all">全部</option>
+                <option value="core">核心强势</option>
+                <option value="volume">量能异常</option>
+                <option value="risk">风险释放</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>股票</th>
+                  <th>题材</th>
+                  <th>竞价涨幅</th>
+                  <th>匹配额</th>
+                  <th>强度</th>
+                  <th>开盘观察</th>
+                </tr>
+              </thead>
+              <tbody id="stockRows"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <aside class="side-stack">
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title">交易计划</div>
+            <div class="panel-note">09:25 → 09:45</div>
+          </div>
+          <div class="content-pad">
+            <div class="timeline">
+              <div class="time-step">
+                <time>09:25</time>
+                <div>优先看高开 2% 到 6%、匹配额放大且非一字的前排，避免纯情绪顶一字后排。</div>
+              </div>
+              <div class="time-step">
+                <time>09:30</time>
+                <div>确认开盘 3 分钟承接。强势方向若指数不拖累且前排不炸板，可轻仓跟随。</div>
+              </div>
+              <div class="time-step">
+                <time>09:35</time>
+                <div>若竞价高热但放量下杀，转为观察低吸，不追第一波冲高。</div>
+              </div>
+              <div class="time-step">
+                <time>09:45</time>
+                <div>复核强弱分化：留下换手充分、成交额排名靠前、分时均线不破的标的。</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title">量能异常</div>
+            <div class="panel-note">较昨日竞价</div>
+          </div>
+          <div class="content-pad">
+            <div class="signal-list" id="volumeSignals"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <div class="panel-title">风险雷达</div>
+            <div class="panel-note">先控回撤</div>
+          </div>
+          <div class="content-pad">
+            <div class="signal-list" id="riskSignals"></div>
+          </div>
+        </section>
+      </aside>
+    </section>
+
+    <div class="footnote">
+      说明：当前页面为早盘集合竞价表现模板，示例数据用于呈现结构和交互。接入实时行情时，建议在 09:20、09:25、09:30 三个时间点保留快照，分别计算撤单率、匹配额变化和开盘承接。
+    </div>
+  </main>
+
+  <script>
+    const dataSets = {
+      all: {
+        heat: 71,
+        headline: "竞价偏强，题材延续性好于指数",
+        summary: "高开家数占优，AI 算力、机器人、低空经济资金最集中；需观察 09:30 后前排承接，若放量回落则强度打折。",
+        breadth: "3124 / 1648",
+        amount: "418 亿",
+        limitUp: 36,
+        limitDown: 7,
+        indices: [
+          ["上证指数", "+0.32%", "3538.42", 62],
+          ["深证成指", "+0.48%", "11264.19", 68],
+          ["创业板指", "+0.71%", "2318.06", 75],
+          ["北证50", "-0.18%", "946.37", 42]
+        ],
+        sectors: [
+          ["AI 算力", "+2.8%", 92, false],
+          ["机器人", "+2.1%", 78, false],
+          ["低空经济", "+1.7%", 66, false],
+          ["半导体", "+1.2%", 58, false],
+          ["地产链", "-0.6%", 34, true]
+        ],
+        signals: [
+          ["主线延续", "AI 算力竞价金额和涨停数量同时领先，前排需要看换手承接。", "hot"],
+          ["指数配合", "创业板高开幅度更强，成长方向短线弹性占优。", "hot"],
+          ["分化可控", "跌停竞价数量低，早盘系统性风险暂不突出。", "cool"]
+        ]
+      },
+      hot: {
+        heat: 84,
+        headline: "强势股溢价抬升，资金愿意做进攻",
+        summary: "核心题材前排封单更扎实，竞价抢筹集中在高辨识度标的；适合观察换手龙头和低位补涨。",
+        breadth: "3520 / 1261",
+        amount: "486 亿",
+        limitUp: 51,
+        limitDown: 4,
+        indices: [
+          ["上证指数", "+0.51%", "3545.12", 70],
+          ["深证成指", "+0.86%", "11308.44", 82],
+          ["创业板指", "+1.18%", "2328.92", 88],
+          ["科创50", "+1.06%", "872.36", 84]
+        ],
+        sectors: [
+          ["AI 算力", "+3.6%", 96, false],
+          ["液冷服务器", "+3.1%", 88, false],
+          ["机器人", "+2.5%", 80, false],
+          ["铜缆高速", "+2.2%", 73, false],
+          ["创新药", "+1.4%", 57, false]
+        ],
+        signals: [
+          ["封单增强", "前排高开不极端但匹配额放大，说明资金更重视可参与性。", "hot"],
+          ["补涨启动", "低位分支出现批量高开，可作为主线扩散观察。", "hot"],
+          ["追高约束", "热度高于 80，开盘第一波冲高后更需要等分时回踩。", "warn"]
+        ]
+      },
+      risk: {
+        heat: 38,
+        headline: "竞价偏弱，资金先做防守",
+        summary: "低开数量增加，昨日强势方向有兑现压力；早盘重点看是否快速修复，未修复前降低追涨动作。",
+        breadth: "1542 / 3228",
+        amount: "356 亿",
+        limitUp: 19,
+        limitDown: 24,
+        indices: [
+          ["上证指数", "-0.42%", "3512.37", 36],
+          ["深证成指", "-0.67%", "11102.56", 30],
+          ["创业板指", "-0.91%", "2278.64", 24],
+          ["北证50", "-1.26%", "932.15", 18]
+        ],
+        sectors: [
+          ["黄金", "+1.1%", 62, false],
+          ["银行", "+0.4%", 48, false],
+          ["AI 算力", "-1.3%", 32, true],
+          ["机器人", "-1.8%", 26, true],
+          ["低空经济", "-2.4%", 18, true]
+        ],
+        signals: [
+          ["强转弱", "昨日高标出现批量低开，短线情绪进入检验区。", "warn"],
+          ["防守占优", "红利和避险方向相对抗跌，题材弹性暂时下降。", "cool"],
+          ["等待修复", "09:35 前若无快速收复，优先降频和控仓。", "warn"]
+        ]
+      }
+    };
+
+    const stocks = [
+      ["中际旭创", "300308", "AI 算力", "+5.8%", "18.6 亿", "91", "核心强势", "core"],
+      ["工业富联", "601138", "服务器", "+4.2%", "22.4 亿", "88", "看 09:35 承接", "core"],
+      ["兆威机电", "003021", "机器人", "+6.1%", "5.2 亿", "84", "换手后更稳", "core"],
+      ["宗申动力", "001696", "低空经济", "+3.7%", "7.8 亿", "77", "冲高不追", "volume"],
+      ["沃尔核材", "002130", "铜缆高速", "+4.9%", "9.1 亿", "82", "量能健康", "volume"],
+      ["万科A", "000002", "地产链", "-2.6%", "6.4 亿", "28", "规避弱修复", "risk"],
+      ["中信海直", "000099", "低空经济", "-1.8%", "4.7 亿", "35", "观察止跌", "risk"],
+      ["药明康德", "603259", "创新药", "+1.6%", "8.3 亿", "63", "趋势承接", "volume"]
+    ];
+
+    const volumeSignals = [
+      ["竞价放量", "工业富联匹配额较昨日竞价 +46%，资金集中度提升。", "hot", "46%"],
+      ["撤单偏高", "部分低空经济后排 09:24 后封单回落，开盘谨慎追。", "warn", "31%"],
+      ["低位补量", "机器人低位股竞价额连续两日放大，有扩散迹象。", "hot", "2日"]
+    ];
+
+    const riskSignals = [
+      ["高开过猛", "涨幅超过 7% 且匹配额不足的标的，容易开盘兑现。", "warn", "7%"],
+      ["昨日断板", "断板股若低开超过 3%，先看承接再考虑反核。", "warn", "3%"],
+      ["指数背离", "题材强而指数弱时，仓位需要随 09:45 强度确认。", "cool", "09:45"]
+    ];
+
+    let currentView = "all";
+
+    const heat = document.querySelector("#heat");
+    const thermo = document.querySelector(".thermo");
+    const headline = document.querySelector("#headline");
+    const summaryText = document.querySelector("#summaryText");
+    const openBreadth = document.querySelector("#openBreadth");
+    const matchedAmount = document.querySelector("#matchedAmount");
+    const limitUp = document.querySelector("#limitUp");
+    const limitDown = document.querySelector("#limitDown");
+    const indices = document.querySelector("#indices");
+    const sectorList = document.querySelector("#sectorList");
+    const signals = document.querySelector("#signals");
+    const stockRows = document.querySelector("#stockRows");
+    const search = document.querySelector("#search");
+    const typeFilter = document.querySelector("#typeFilter");
+
+    function toneClass(value) {
+      return value.startsWith("-") ? "green" : "red";
+    }
+
+    function signalDot(type) {
+      if (type === "hot") return "";
+      if (type === "cool") return " green";
+      return " amber";
+    }
+
+    function renderView(view) {
+      const data = dataSets[view];
+      currentView = view;
+      heat.textContent = data.heat;
+      thermo.style.background = `conic-gradient(${data.heat >= 55 ? "var(--red)" : "var(--green)"} 0 ${data.heat}%, #e7ebf1 ${data.heat}% 100%)`;
+      heat.style.color = data.heat >= 55 ? "var(--red)" : "var(--green)";
+      headline.textContent = data.headline;
+      summaryText.textContent = data.summary;
+      openBreadth.textContent = data.breadth;
+      matchedAmount.textContent = data.amount;
+      limitUp.textContent = data.limitUp;
+      limitDown.textContent = data.limitDown;
+
+      indices.innerHTML = data.indices.map(item => `
+        <article class="index-tile">
+          <div class="index-name">${item[0]}</div>
+          <div class="index-price ${toneClass(item[1])}">${item[1]}</div>
+          <div>${item[2]}</div>
+          <div class="range-bar" aria-label="${item[0]} 强度 ${item[3]}%">
+            <span style="width:${item[3]}%; background:${item[1].startsWith("-") ? "var(--green)" : "var(--red)"}"></span>
+          </div>
+        </article>
+      `).join("");
+
+      sectorList.innerHTML = data.sectors.map(item => `
+        <div class="sector-row ${item[3] ? "weak" : ""}">
+          <b>${item[0]}</b>
+          <div class="sector-track"><span style="width:${item[2]}%"></span></div>
+          <strong class="${toneClass(item[1])}">${item[1]}</strong>
+        </div>
+      `).join("");
+
+      signals.innerHTML = data.signals.map(item => `
+        <div class="signal">
+          <i class="dot${signalDot(item[2])}"></i>
+          <div><strong>${item[0]}</strong><span>${item[1]}</span></div>
+          <span class="tag ${item[2] === "hot" ? "hot" : item[2] === "cool" ? "cool" : ""}">${item[2] === "hot" ? "进攻" : item[2] === "cool" ? "稳" : "谨慎"}</span>
+        </div>
+      `).join("");
+
+      renderStocks();
+    }
+
+    function renderStocks() {
+      const keyword = search.value.trim().toLowerCase();
+      const filter = typeFilter.value;
+      const filtered = stocks.filter(stock => {
+        const text = stock.join(" ").toLowerCase();
+        const matchKeyword = !keyword || text.includes(keyword);
+        const matchType = filter === "all" || stock[7] === filter;
+        const matchView = currentView === "all" ||
+          (currentView === "hot" && stock[7] !== "risk") ||
+          (currentView === "risk" && stock[7] === "risk");
+        return matchKeyword && matchType && matchView;
+      });
+
+      stockRows.innerHTML = filtered.map(stock => `
+        <tr>
+          <td><span class="stock-name">${stock[0]}</span><span class="code">${stock[1]}</span></td>
+          <td>${stock[2]}</td>
+          <td class="${toneClass(stock[3])}"><b>${stock[3]}</b></td>
+          <td>${stock[4]}</td>
+          <td><span class="tag ${Number(stock[5]) >= 75 ? "hot" : Number(stock[5]) < 45 ? "cool" : ""}">${stock[5]}</span></td>
+          <td>${stock[6]}</td>
+        </tr>
+      `).join("") || `<tr><td colspan="6" style="text-align:center; color: var(--muted); padding: 24px;">没有匹配结果</td></tr>`;
+    }
+
+    function renderStaticSignals() {
+      document.querySelector("#volumeSignals").innerHTML = volumeSignals.map(item => `
+        <div class="signal">
+          <i class="dot${signalDot(item[2])}"></i>
+          <div><strong>${item[0]}</strong><span>${item[1]}</span></div>
+          <span class="tag ${item[2] === "hot" ? "hot" : ""}">${item[3]}</span>
+        </div>
+      `).join("");
+
+      document.querySelector("#riskSignals").innerHTML = riskSignals.map(item => `
+        <div class="signal">
+          <i class="dot${signalDot(item[2])}"></i>
+          <div><strong>${item[0]}</strong><span>${item[1]}</span></div>
+          <span class="tag ${item[2] === "cool" ? "cool" : ""}">${item[3]}</span>
+        </div>
+      `).join("");
+    }
+
+    document.querySelectorAll(".segmented button").forEach(button => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".segmented button").forEach(item => item.classList.remove("active"));
+        button.classList.add("active");
+        renderView(button.dataset.view);
+      });
+    });
+
+    document.querySelector("#refresh").addEventListener("click", () => {
+      const next = currentView === "all" ? "hot" : currentView === "hot" ? "risk" : "all";
+      const button = document.querySelector(`[data-view="${next}"]`);
+      button.click();
+    });
+
+    search.addEventListener("input", renderStocks);
+    typeFilter.addEventListener("change", renderStocks);
+
+    renderStaticSignals();
+    renderView("all");
+
+    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+      navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+    }
+  </script>
+</body>
+</html>
