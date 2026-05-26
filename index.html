@@ -596,14 +596,9 @@
     <header class="topbar">
       <div class="title-block">
         <h1>早盘集合竞价表现</h1>
-        <div class="subline">2026-05-25 09:25 更新 · 观察口径：竞价涨跌幅、匹配额、封单强度、开盘承接</div>
+        <div class="subline" id="updatedLine">2026-05-26 更新 · 观察口径：开盘后行情替代集合竞价专用字段</div>
       </div>
       <div class="actions">
-        <div class="segmented" aria-label="个股筛选">
-          <button class="active" data-view="all">全部</button>
-          <button data-view="hot">强势股</button>
-          <button data-view="risk">风险股</button>
-        </div>
         <button class="icon-button" id="refresh" title="刷新示例数据" aria-label="刷新">↻</button>
       </div>
     </header>
@@ -876,6 +871,7 @@
     const matchedAmount = document.querySelector("#matchedAmount");
     const limitUp = document.querySelector("#limitUp");
     const limitDown = document.querySelector("#limitDown");
+    const updatedLine = document.querySelector("#updatedLine");
     const indices = document.querySelector("#indices");
     const sectorList = document.querySelector("#sectorList");
     const signals = document.querySelector("#signals");
@@ -979,18 +975,8 @@
       `).join("");
     }
 
-    document.querySelectorAll(".segmented button").forEach(button => {
-      button.addEventListener("click", () => {
-        document.querySelectorAll(".segmented button").forEach(item => item.classList.remove("active"));
-        button.classList.add("active");
-        renderView("all", button.dataset.view);
-      });
-    });
-
     document.querySelector("#refresh").addEventListener("click", () => {
-      const next = currentView === "all" ? "hot" : currentView === "hot" ? "risk" : "all";
-      const button = document.querySelector(`[data-view="${next}"]`);
-      button.click();
+      loadLatestData();
     });
 
     search.addEventListener("input", renderStocks);
@@ -1016,6 +1002,20 @@
         }
         if (Array.isArray(latest.riskSignals)) {
           riskSignals = latest.riskSignals;
+        }
+        if (latest.generated_at && updatedLine) {
+          const date = new Date(latest.generated_at);
+          const readable = Number.isNaN(date.getTime())
+            ? latest.generated_at
+            : date.toLocaleString("zh-CN", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false
+              });
+          updatedLine.textContent = `${readable} 更新 · 观察口径：${latest.source_note || "开盘后行情替代集合竞价专用字段"}`;
         }
         renderStaticSignals();
         renderView("all", currentView);
