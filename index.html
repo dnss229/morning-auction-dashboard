@@ -843,7 +843,7 @@
       }
     };
 
-    const stocks = [
+    let stocks = [
       ["中际旭创", "300308", "AI 算力", "+5.8%", "18.6 亿", "91", "核心强势", "core"],
       ["工业富联", "601138", "服务器", "+4.2%", "22.4 亿", "88", "看 09:35 承接", "core"],
       ["兆威机电", "003021", "机器人", "+6.1%", "5.2 亿", "84", "换手后更稳", "core"],
@@ -854,13 +854,13 @@
       ["药明康德", "603259", "创新药", "+1.6%", "8.3 亿", "63", "趋势承接", "volume"]
     ];
 
-    const volumeSignals = [
+    let volumeSignals = [
       ["竞价放量", "工业富联匹配额较昨日竞价 +46%，资金集中度提升。", "hot", "46%"],
       ["撤单偏高", "部分低空经济后排 09:24 后封单回落，开盘谨慎追。", "warn", "31%"],
       ["低位补量", "机器人低位股竞价额连续两日放大，有扩散迹象。", "hot", "2日"]
     ];
 
-    const riskSignals = [
+    let riskSignals = [
       ["高开过猛", "涨幅超过 7% 且匹配额不足的标的，容易开盘兑现。", "warn", "7%"],
       ["昨日断板", "断板股若低开超过 3%，先看承接再考虑反核。", "warn", "3%"],
       ["指数背离", "题材强而指数弱时，仓位需要随 09:45 强度确认。", "cool", "09:45"]
@@ -998,6 +998,33 @@
 
     renderStaticSignals();
     renderView("all");
+
+    async function loadLatestData() {
+      if (location.protocol === "file:") return;
+      try {
+        const response = await fetch("./data/latest.json", { cache: "no-store" });
+        if (!response.ok) return;
+        const latest = await response.json();
+        if (latest.market) {
+          dataSets.all = latest.market;
+        }
+        if (Array.isArray(latest.stocks)) {
+          stocks = latest.stocks;
+        }
+        if (Array.isArray(latest.volumeSignals)) {
+          volumeSignals = latest.volumeSignals;
+        }
+        if (Array.isArray(latest.riskSignals)) {
+          riskSignals = latest.riskSignals;
+        }
+        renderStaticSignals();
+        renderView("all", currentView);
+      } catch (error) {
+        console.warn("latest data unavailable", error);
+      }
+    }
+
+    loadLatestData();
 
     if ("serviceWorker" in navigator && location.protocol !== "file:") {
       navigator.serviceWorker.register("./service-worker.js").catch(() => {});
