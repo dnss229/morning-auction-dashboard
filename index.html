@@ -596,7 +596,7 @@
     <header class="topbar">
       <div class="title-block">
         <h1>早盘集合竞价表现</h1>
-        <div class="subline" id="updatedLine">2026-05-26 更新 · 观察口径：开盘后行情替代集合竞价专用字段</div>
+        <div class="subline" id="updatedLine">正在加载最新数据...</div>
       </div>
       <div class="actions">
         <button class="icon-button" id="refresh" title="刷新示例数据" aria-label="刷新">↻</button>
@@ -607,29 +607,29 @@
       <div class="summary-main">
         <div class="thermo" aria-label="竞价温度 71 分"><span id="heat">71</span></div>
         <div class="summary-copy">
-          <strong id="headline">竞价偏强，题材延续性好于指数</strong>
-          <p id="summaryText">高开家数占优，AI 算力、机器人、低空经济资金最集中；需观察 09:30 后前排承接，若放量回落则强度打折。</p>
+          <strong id="headline">正在加载</strong>
+          <p id="summaryText">正在读取今日早盘数据。</p>
         </div>
       </div>
       <div class="metric">
         <div class="metric-label">高开 / 低开</div>
-        <div class="metric-value red" id="openBreadth">3124 / 1648</div>
-        <div class="metric-foot">高开占比 65.5%</div>
+        <div class="metric-value red" id="openBreadth">--</div>
+        <div class="metric-foot">等待更新</div>
       </div>
       <div class="metric">
         <div class="metric-label">竞价匹配额</div>
-        <div class="metric-value" id="matchedAmount">418 亿</div>
-        <div class="metric-foot">较昨日 +18.6%</div>
+        <div class="metric-value" id="matchedAmount">--</div>
+        <div class="metric-foot">等待更新</div>
       </div>
       <div class="metric">
         <div class="metric-label">涨停竞价</div>
-        <div class="metric-value red" id="limitUp">36</div>
-        <div class="metric-foot">一字板 11 只</div>
+        <div class="metric-value red" id="limitUp">--</div>
+        <div class="metric-foot">等待更新</div>
       </div>
       <div class="metric">
         <div class="metric-label">跌停竞价</div>
-        <div class="metric-value green" id="limitDown">7</div>
-        <div class="metric-foot">退潮风险可控</div>
+        <div class="metric-value green" id="limitDown">--</div>
+        <div class="metric-foot">等待更新</div>
       </div>
     </section>
 
@@ -982,14 +982,11 @@
     search.addEventListener("input", renderStocks);
     typeFilter.addEventListener("change", renderStocks);
 
-    renderStaticSignals();
-    renderView("all");
-
     async function loadLatestData() {
-      if (location.protocol === "file:") return;
+      if (location.protocol === "file:") return false;
       try {
         const response = await fetch("./data/latest.json", { cache: "no-store" });
-        if (!response.ok) return;
+        if (!response.ok) return false;
         const latest = await response.json();
         if (latest.market) {
           dataSets.all = latest.market;
@@ -1017,14 +1014,20 @@
               });
           updatedLine.textContent = `${readable} 更新 · 观察口径：${latest.source_note || "开盘后行情替代集合竞价专用字段"}`;
         }
-        renderStaticSignals();
-        renderView("all", currentView);
+        return true;
       } catch (error) {
         console.warn("latest data unavailable", error);
+        return false;
       }
     }
 
-    loadLatestData();
+    async function initDashboard() {
+      await loadLatestData();
+      renderStaticSignals();
+      renderView("all", currentView);
+    }
+
+    initDashboard();
 
     if ("serviceWorker" in navigator && location.protocol !== "file:") {
       navigator.serviceWorker.register("./service-worker.js").catch(() => {});
